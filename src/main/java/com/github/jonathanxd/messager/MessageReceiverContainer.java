@@ -25,36 +25,27 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager.test;
+package com.github.jonathanxd.messager;
 
-import com.github.jonathanxd.messager.Communication;
-import com.github.jonathanxd.messager.MessageSender;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public class SimpleCommunication {
+public class MessageReceiverContainer<T> {
+    private final MessageReceiver<T> messageReceiver;
+    private final Predicate<Message<?>> messagePredicate;
 
-    @Test
-    public void testSimpleCommunication() {
-        Communication communication = new Communication();
+    public MessageReceiverContainer(MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
+        this.messageReceiver = messageReceiver;
+        this.messagePredicate = messagePredicate;
+    }
 
-        communication.<List<String>>addGlobal((messageSender, message) -> {
-            Instant now = Instant.now();
-            Assert.assertArrayEquals(new Object[]{"A", "B"}, message.getContent().toArray());
-            System.out.println("Received from '" + messageSender + "' -> " + message + ". Now = " + now);
-        }, message -> message.getContent() instanceof List); // Only accept lists
+    public MessageReceiver<T> getMessageReceiver() {
+        return messageReceiver;
+    }
 
-        MessageSender<Object> objectMessageSender = MessageSender.newInstance(communication);
-
-        objectMessageSender.send(Arrays.asList("A", "B"));
-        objectMessageSender.send("0.");
+    public Predicate<Message<?>> getMessagePredicate() {
+        return messagePredicate;
     }
 }

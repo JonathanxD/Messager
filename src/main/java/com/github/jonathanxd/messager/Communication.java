@@ -31,22 +31,31 @@ import com.github.jonathanxd.messager.util.ValueListMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Created by jonathan on 21/04/16.
  */
 public class Communication {
 
-    private final List<MessageReceiver<?>> globals = new ArrayList<>();
-    private final ValueListMap<MessageSender<?>, MessageReceiver<?>> valueListMap = new ValueListMap<>();
+    private final List<MessageReceiverContainer<?>> globals = new ArrayList<>();
+    private final ValueListMap<MessageSender<?>, MessageReceiverContainer<?>> valueListMap = new ValueListMap<>();
 
 
     public <T> void addReceiver(MessageSender<T> messageSender, MessageReceiver<T> messageReceiver) {
-        valueListMap.add(messageSender, messageReceiver);
+        valueListMap.add(messageSender, new MessageReceiverContainer<>(messageReceiver, tMessage -> true));
     }
 
-    public <T> void addGlobal(MessageReceiver<?> messageReceiver) {
-        globals.add(messageReceiver);
+    public <T> void addReceiver(MessageSender<T> messageSender, MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
+        valueListMap.add(messageSender, new MessageReceiverContainer<>(messageReceiver, messagePredicate));
+    }
+
+    public <T> void addGlobal(MessageReceiver<T> messageReceiver) {
+        globals.add(new MessageReceiverContainer<>(messageReceiver, message -> true));
+    }
+
+    public <T> void addGlobal(MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
+        globals.add(new MessageReceiverContainer<>(messageReceiver, messagePredicate));
     }
 
     public <T> void sendMessage(MessageSender<T> messageSender, Message<T> message) {
@@ -58,8 +67,12 @@ public class Communication {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void helpReceiveMessage(MessageReceiver<T> messageReceiver, MessageSender<?> messageSender, Message<?> message) {
-        messageReceiver.receive((MessageSender<T>) messageSender, (Message<T>) message);
+    private <T> void helpReceiveMessage(MessageReceiverContainer<T> messageReceiver, MessageSender<?> messageSender, Message<?> message) {
+
+        if(messageReceiver.getMessagePredicate().test(message)) {
+            messageReceiver.getMessageReceiver().receive((MessageSender<T>) messageSender, (Message<T>) message);
+        }
+
     }
 
 }
