@@ -31,7 +31,6 @@ import com.github.jonathanxd.messager.Communication;
 import com.github.jonathanxd.messager.MessageSender;
 import com.github.jonathanxd.messager.receivers.MappedReceiver;
 import com.github.jonathanxd.messager.receivers.MultiMessageReceiver;
-import com.github.jonathanxd.messager.Receiver;
 import com.github.jonathanxd.messager.receivers.TypedMsgMessageReceiver;
 
 import org.junit.Assert;

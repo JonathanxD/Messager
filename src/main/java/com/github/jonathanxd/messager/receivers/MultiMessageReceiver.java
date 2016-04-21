@@ -29,8 +29,8 @@ package com.github.jonathanxd.messager.receivers;
 
 import com.github.jonathanxd.messager.Message;
 import com.github.jonathanxd.messager.MessageSender;
-import com.github.jonathanxd.messager.Receiver;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -38,10 +38,10 @@ import java.util.function.Function;
  */
 public class MultiMessageReceiver<T, R> implements TypedMessageReceiver<T> {
 
-    private final Function<R, TypedMsgMessageReceiver<R>> receiverFunction;
+    private final BiFunction<T, R, TypedMsgMessageReceiver<R>> receiverFunction;
     private final Function<T, R> mapper;
 
-    public MultiMessageReceiver(Function<R, TypedMsgMessageReceiver<R>> receiverFunction, Function<T, R> mapper) {
+    public MultiMessageReceiver(BiFunction<T, R, TypedMsgMessageReceiver<R>> receiverFunction, Function<T, R> mapper) {
         this.receiverFunction = receiverFunction;
         this.mapper = mapper;
     }
@@ -50,7 +50,7 @@ public class MultiMessageReceiver<T, R> implements TypedMessageReceiver<T> {
     public void typedReceive(MessageSender<T> messageSender, Message<T> message) {
         R mapped = message.map(mapper);
 
-        TypedMsgMessageReceiver<R> apply = receiverFunction.apply(mapped);
+        TypedMsgMessageReceiver<R> apply = receiverFunction.apply(message.getContent(), mapped);
 
         if(apply != null) {
             apply.receive(messageSender, message.newInstanceTimed(mapped));
