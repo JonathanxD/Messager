@@ -27,6 +27,7 @@
  */
 package com.github.jonathanxd.messager;
 
+import com.github.jonathanxd.messager.receivers.TypedMessageReceiver;
 import com.github.jonathanxd.messager.util.ValueListMap;
 
 import java.util.ArrayList;
@@ -42,20 +43,20 @@ public class Communication {
     private final ValueListMap<MessageSender<?>, MessageReceiverContainer<?>> valueListMap = new ValueListMap<>();
 
 
-    public <T> void addReceiver(MessageSender<T> messageSender, MessageReceiver<T> messageReceiver) {
-        valueListMap.add(messageSender, new MessageReceiverContainer<>(messageReceiver, tMessage -> true));
+    public <T> void addReceiver(MessageSender<T> messageSender, TypedMessageReceiver<T> typedMessageReceiver) {
+        valueListMap.add(messageSender, new MessageReceiverContainer<>(typedMessageReceiver, tMessage -> true));
     }
 
-    public <T> void addReceiver(MessageSender<T> messageSender, MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
-        valueListMap.add(messageSender, new MessageReceiverContainer<>(messageReceiver, messagePredicate));
+    public <T> void addReceiver(MessageSender<T> messageSender, TypedMessageReceiver<T> typedMessageReceiver, Predicate<Message<?>> messagePredicate) {
+        valueListMap.add(messageSender, new MessageReceiverContainer<>(typedMessageReceiver, messagePredicate));
     }
 
-    public <T> void addGlobal(MessageReceiver<T> messageReceiver) {
-        globals.add(new MessageReceiverContainer<>(messageReceiver, message -> true));
+    public <T> void addGlobal(TypedMessageReceiver<T> typedMessageReceiver) {
+        globals.add(new MessageReceiverContainer<>(typedMessageReceiver, message -> true));
     }
 
-    public <T> void addGlobal(MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
-        globals.add(new MessageReceiverContainer<>(messageReceiver, messagePredicate));
+    public <T> void addGlobal(TypedMessageReceiver<T> typedMessageReceiver, Predicate<Message<?>> messagePredicate) {
+        globals.add(new MessageReceiverContainer<>(typedMessageReceiver, messagePredicate));
     }
 
     public <T> void sendMessage(MessageSender<T> messageSender, Message<T> message) {
@@ -70,7 +71,7 @@ public class Communication {
     private <T> void helpReceiveMessage(MessageReceiverContainer<T> messageReceiver, MessageSender<?> messageSender, Message<?> message) {
 
         if(messageReceiver.getMessagePredicate().test(message)) {
-            messageReceiver.getMessageReceiver().receive((MessageSender<T>) messageSender, (Message<T>) message);
+            messageReceiver.getTypedMessageReceiver().receive(messageSender, message);
         }
 
     }

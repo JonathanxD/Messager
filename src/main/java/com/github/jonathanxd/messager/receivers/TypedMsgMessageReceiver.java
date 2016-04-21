@@ -25,55 +25,27 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager;
+package com.github.jonathanxd.messager.receivers;
 
-import java.time.Instant;
-import java.util.function.Function;
+import com.github.jonathanxd.messager.Message;
+import com.github.jonathanxd.messager.MessageSender;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public class Message<T> {
 
-    private final T content;
-    private final Instant sendInstant;
+/**
+ * Only message type is passed
+ * @param <T> Message Type
+ */
+@FunctionalInterface
+public interface TypedMsgMessageReceiver<T> extends SimpleMessageReceiver {
 
-    public Message(T content, Instant sendInstant) {
-        this.content = content;
-        this.sendInstant = sendInstant;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public Instant getSendInstant() {
-        return sendInstant;
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
-    public String toString() {
-        return "Message["
-                +"content = "+toString(getContent())
-                +", sendInstant = "+toString(getSendInstant())
-                +"]";
+    default void receive(MessageSender<?> messageSender, Message<?> message) {
+        typedMessageReceive(messageSender, (Message<T>) message);
     }
 
-    public <R> R map(Function<T, R> function) {
-        return function.apply(getContent());
-    }
-
-    /**
-     * Create a new instance with a new value and current {@link #getSendInstant()}
-     * @param value New Value
-     * @param <V> Type
-     * @return Message with a new value and current {@link #getSendInstant()}
-     */
-    public <V> Message<V> newInstanceTimed(V value) {
-        return new Message<>(value, this.getSendInstant());
-    }
-
-    private static String toString(Object o) {
-        return o.getClass().getSimpleName()+"("+o+")";
-    }
+    void typedMessageReceive(MessageSender<?> messageSender, Message<T> message);
 }

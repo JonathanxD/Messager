@@ -25,55 +25,23 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager;
+package com.github.jonathanxd.messager.receivers;
 
-import java.time.Instant;
-import java.util.function.Function;
+import com.github.jonathanxd.messager.Message;
+import com.github.jonathanxd.messager.MessageSender;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public class Message<T> {
+@FunctionalInterface
+public interface TypedMessageReceiver<T> extends TypedMsgMessageReceiver<T> {
 
-    private final T content;
-    private final Instant sendInstant;
-
-    public Message(T content, Instant sendInstant) {
-        this.content = content;
-        this.sendInstant = sendInstant;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public Instant getSendInstant() {
-        return sendInstant;
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
-    public String toString() {
-        return "Message["
-                +"content = "+toString(getContent())
-                +", sendInstant = "+toString(getSendInstant())
-                +"]";
+    default void typedMessageReceive(MessageSender<?> messageSender, Message<T> message) {
+        typedReceive((MessageSender<T>) messageSender, message);
     }
 
-    public <R> R map(Function<T, R> function) {
-        return function.apply(getContent());
-    }
+    void typedReceive(MessageSender<T> messageSender, Message<T> message);
 
-    /**
-     * Create a new instance with a new value and current {@link #getSendInstant()}
-     * @param value New Value
-     * @param <V> Type
-     * @return Message with a new value and current {@link #getSendInstant()}
-     */
-    public <V> Message<V> newInstanceTimed(V value) {
-        return new Message<>(value, this.getSendInstant());
-    }
-
-    private static String toString(Object o) {
-        return o.getClass().getSimpleName()+"("+o+")";
-    }
 }

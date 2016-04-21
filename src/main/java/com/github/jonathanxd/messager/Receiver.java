@@ -27,53 +27,12 @@
  */
 package com.github.jonathanxd.messager;
 
-import java.time.Instant;
-import java.util.function.Function;
-
 /**
  * Created by jonathan on 21/04/16.
  */
-public class Message<T> {
+@FunctionalInterface
+public interface Receiver<R> {
 
-    private final T content;
-    private final Instant sendInstant;
+    void receive(Message<R> receiveObject);
 
-    public Message(T content, Instant sendInstant) {
-        this.content = content;
-        this.sendInstant = sendInstant;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public Instant getSendInstant() {
-        return sendInstant;
-    }
-
-    @Override
-    public String toString() {
-        return "Message["
-                +"content = "+toString(getContent())
-                +", sendInstant = "+toString(getSendInstant())
-                +"]";
-    }
-
-    public <R> R map(Function<T, R> function) {
-        return function.apply(getContent());
-    }
-
-    /**
-     * Create a new instance with a new value and current {@link #getSendInstant()}
-     * @param value New Value
-     * @param <V> Type
-     * @return Message with a new value and current {@link #getSendInstant()}
-     */
-    public <V> Message<V> newInstanceTimed(V value) {
-        return new Message<>(value, this.getSendInstant());
-    }
-
-    private static String toString(Object o) {
-        return o.getClass().getSimpleName()+"("+o+")";
-    }
 }

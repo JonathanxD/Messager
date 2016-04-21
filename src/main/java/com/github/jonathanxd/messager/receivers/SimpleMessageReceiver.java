@@ -25,13 +25,19 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager;
+package com.github.jonathanxd.messager.receivers;
+
+import com.github.jonathanxd.messager.Message;
+import com.github.jonathanxd.messager.MessageSender;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public interface MessageReceiver<T> {
 
-    void receive(MessageSender<T> messageSender, Message<T> message);
-
+/**
+ * Only message type is passed
+ */
+@FunctionalInterface
+public interface SimpleMessageReceiver {
+    void receive(MessageSender<?> messageSender, Message<?> message);
 }

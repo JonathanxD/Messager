@@ -27,22 +27,24 @@
  */
 package com.github.jonathanxd.messager;
 
+import com.github.jonathanxd.messager.receivers.TypedMessageReceiver;
+
 import java.util.function.Predicate;
 
 /**
  * Created by jonathan on 21/04/16.
  */
 public class MessageReceiverContainer<T> {
-    private final MessageReceiver<T> messageReceiver;
+    private final TypedMessageReceiver<T> typedMessageReceiver;
     private final Predicate<Message<?>> messagePredicate;
 
-    public MessageReceiverContainer(MessageReceiver<T> messageReceiver, Predicate<Message<?>> messagePredicate) {
-        this.messageReceiver = messageReceiver;
+    public MessageReceiverContainer(TypedMessageReceiver<T> typedMessageReceiver, Predicate<Message<?>> messagePredicate) {
+        this.typedMessageReceiver = typedMessageReceiver;
         this.messagePredicate = messagePredicate;
     }
 
-    public MessageReceiver<T> getMessageReceiver() {
-        return messageReceiver;
+    public TypedMessageReceiver<T> getTypedMessageReceiver() {
+        return typedMessageReceiver;
     }
 
     public Predicate<Message<?>> getMessagePredicate() {

@@ -25,55 +25,36 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager;
+package com.github.jonathanxd.messager.receivers;
 
-import java.time.Instant;
+import com.github.jonathanxd.messager.Message;
+import com.github.jonathanxd.messager.MessageSender;
+import com.github.jonathanxd.messager.Receiver;
+
 import java.util.function.Function;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public class Message<T> {
+public class MultiMessageReceiver<T, R> implements TypedMessageReceiver<T> {
 
-    private final T content;
-    private final Instant sendInstant;
+    private final Function<R, TypedMsgMessageReceiver<R>> receiverFunction;
+    private final Function<T, R> mapper;
 
-    public Message(T content, Instant sendInstant) {
-        this.content = content;
-        this.sendInstant = sendInstant;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public Instant getSendInstant() {
-        return sendInstant;
+    public MultiMessageReceiver(Function<R, TypedMsgMessageReceiver<R>> receiverFunction, Function<T, R> mapper) {
+        this.receiverFunction = receiverFunction;
+        this.mapper = mapper;
     }
 
     @Override
-    public String toString() {
-        return "Message["
-                +"content = "+toString(getContent())
-                +", sendInstant = "+toString(getSendInstant())
-                +"]";
-    }
+    public void typedReceive(MessageSender<T> messageSender, Message<T> message) {
+        R mapped = message.map(mapper);
 
-    public <R> R map(Function<T, R> function) {
-        return function.apply(getContent());
-    }
+        TypedMsgMessageReceiver<R> apply = receiverFunction.apply(mapped);
 
-    /**
-     * Create a new instance with a new value and current {@link #getSendInstant()}
-     * @param value New Value
-     * @param <V> Type
-     * @return Message with a new value and current {@link #getSendInstant()}
-     */
-    public <V> Message<V> newInstanceTimed(V value) {
-        return new Message<>(value, this.getSendInstant());
-    }
+        if(apply != null) {
+            apply.receive(messageSender, message.newInstanceTimed(mapped));
+        }
 
-    private static String toString(Object o) {
-        return o.getClass().getSimpleName()+"("+o+")";
     }
 }

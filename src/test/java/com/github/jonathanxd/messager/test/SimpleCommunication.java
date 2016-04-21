@@ -29,6 +29,10 @@ package com.github.jonathanxd.messager.test;
 
 import com.github.jonathanxd.messager.Communication;
 import com.github.jonathanxd.messager.MessageSender;
+import com.github.jonathanxd.messager.receivers.MappedReceiver;
+import com.github.jonathanxd.messager.receivers.MultiMessageReceiver;
+import com.github.jonathanxd.messager.Receiver;
+import com.github.jonathanxd.messager.receivers.TypedMsgMessageReceiver;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,12 +50,35 @@ public class SimpleCommunication {
     public void testSimpleCommunication() {
         Communication communication = new Communication();
 
-        communication.<List<String>>addGlobal((messageSender, message) -> {
+        TypedMsgMessageReceiver<List> listReceiver = (messageSender, message) -> {
             Instant now = Instant.now();
             Assert.assertArrayEquals(new Object[]{"A", "B"}, message.getContent().toArray());
-            System.out.println("Received from '" + messageSender + "' -> " + message + ". Now = " + now);
-        }, message -> message.getContent() instanceof List); // Only accept lists
+            System.out.println("Received from '" + messageSender + "' -> a list -> " + message + ". Now = " + now);
+        };
 
+        TypedMsgMessageReceiver<String> stringReceiver = (messageSender, message) -> {
+            Instant now = Instant.now();
+            Assert.assertEquals("0.", message.getContent());
+            System.out.println("Received from '" + messageSender + "' -> a string -> " + message + ". Now = " + now);
+        };
+
+        communication.addGlobal(new MultiMessageReceiver<>(o -> {
+            if(o instanceof List) {
+                return new MappedReceiver<>(x -> (List) x, listReceiver);
+            }
+
+            if(o instanceof String) {
+                return new MappedReceiver<>(Object::toString, stringReceiver);
+            }
+            return null;
+        }, t -> t));
+
+        // communication.<List<String>>addGlobal(new MultiMessageReceiver(message -> {
+        //   if(message.getType() == END_VISIT) {
+        //       return new TypeReceiver(message.getAs(END_VISIT));
+        //   }
+        //   return null;
+        // }, message -> message.map(Types::getType))
         MessageSender<Object> objectMessageSender = MessageSender.newInstance(communication);
 
         objectMessageSender.send(Arrays.asList("A", "B"));

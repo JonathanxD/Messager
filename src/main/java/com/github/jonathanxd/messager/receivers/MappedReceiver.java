@@ -25,55 +25,28 @@
  *      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *      THE SOFTWARE.
  */
-package com.github.jonathanxd.messager;
+package com.github.jonathanxd.messager.receivers;
 
-import java.time.Instant;
+import com.github.jonathanxd.messager.Message;
+import com.github.jonathanxd.messager.MessageSender;
+
 import java.util.function.Function;
 
 /**
  * Created by jonathan on 21/04/16.
  */
-public class Message<T> {
+public class MappedReceiver<R, T> implements TypedMsgMessageReceiver<R> {
 
-    private final T content;
-    private final Instant sendInstant;
+    private final Function<R, T> mapper;
+    private final TypedMsgMessageReceiver<T> receiver;
 
-    public Message(T content, Instant sendInstant) {
-        this.content = content;
-        this.sendInstant = sendInstant;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public Instant getSendInstant() {
-        return sendInstant;
+    public MappedReceiver(Function<R, T> mapper, TypedMsgMessageReceiver<T> receiver) {
+        this.mapper = mapper;
+        this.receiver = receiver;
     }
 
     @Override
-    public String toString() {
-        return "Message["
-                +"content = "+toString(getContent())
-                +", sendInstant = "+toString(getSendInstant())
-                +"]";
-    }
-
-    public <R> R map(Function<T, R> function) {
-        return function.apply(getContent());
-    }
-
-    /**
-     * Create a new instance with a new value and current {@link #getSendInstant()}
-     * @param value New Value
-     * @param <V> Type
-     * @return Message with a new value and current {@link #getSendInstant()}
-     */
-    public <V> Message<V> newInstanceTimed(V value) {
-        return new Message<>(value, this.getSendInstant());
-    }
-
-    private static String toString(Object o) {
-        return o.getClass().getSimpleName()+"("+o+")";
+    public void typedMessageReceive(MessageSender<?> messageSender, Message<R> message) {
+        receiver.receive(messageSender, message.newInstanceTimed(mapper.apply(message.getContent())));
     }
 }
